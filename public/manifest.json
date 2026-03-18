@@ -8,12 +8,12 @@
   "theme_color": "#E8884A",
   "icons": [
     {
-      "src": "/logo192.png",
+      "src": "https://via.placeholder.com/192x192/E8884A/ffffff?text=PM",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/logo512.png",
+      "src": "https://via.placeholder.com/512x512/E8884A/ffffff?text=PM",
       "sizes": "512x512",
       "type": "image/png"
     }
