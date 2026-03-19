@@ -777,108 +777,11 @@ export default function PoseMaster() {
   const tabPoses=Object.entries(POSE_DEFS).filter(([,v])=>v.cat===activeTab);
 
   // ─────────────────────────────────────────────────────────────────────────
+  const [mobileTab, setMobileTab] = useState("poses");
+
   return (
-    <div style={{display:"flex",height:"100vh",background:"#0C0C1A",fontFamily:"'DM Mono',monospace",overflow:"hidden"}}>
-
-      {/* ── 3D ────────────────────────────────────────────────────────── */}
-      <div style={{flex:1,position:"relative",overflow:"hidden"}}
-        ref={mountRef}
-        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp}
-        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}
-        onContextMenu={e=>e.preventDefault()}
-      >
-        {selName&&(
-          <div style={{position:"absolute",top:14,left:14,background:"rgba(12,12,26,0.92)",border:"1px solid #22203A",borderRadius:10,padding:"10px 14px",fontSize:11,backdropFilter:"blur(14px)",minWidth:178,pointerEvents:"none",boxShadow:"0 4px 24px rgba(0,0,0,.6)"}}>
-            <div style={{color:"#E8884A",fontSize:12,fontWeight:600,marginBottom:4,letterSpacing:.3}}>
-              {selName.replace("left","L ").replace("right","R ").replace(/([A-Z])/g," $1").trim().toUpperCase()}
-            </div>
-            <div style={{display:"flex",gap:14,marginTop:2}}>
-              {["x","y","z"].map(ax=>(
-                <span key={ax} style={{color:"#5A5A88",fontSize:10}}>
-                  {ax.toUpperCase()}: <span style={{color:"#E4E4F0"}}>{d2(selRot[ax])}</span>
-                </span>
-              ))}
-            </div>
-            <div style={{fontSize:9,color:"#4A4A72",marginTop:5}}>drag · arrow keys · ESC deselect</div>
-          </div>
-        )}
-
-        <div style={{position:"absolute",bottom:68,left:"50%",transform:"translateX(-50%)",fontSize:10,color:"#3A3A60",pointerEvents:"none",whiteSpace:"nowrap"}}>
-          click joint · drag rotate · scroll zoom · right-drag orbit
-        </div>
-
-        {/* Toolbar */}
-        <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",display:"flex",gap:6,background:"rgba(12,12,26,0.94)",border:"1px solid #22203A",borderRadius:28,padding:"7px 14px",backdropFilter:"blur(16px)"}}>
-          {[
-            ["↺ Reset",()=>{applyPose("neutral");setMsgs(m=>[...m,{who:"b",html:"Reset to neutral."}]);}],
-            ["⊕ Camera",()=>{orbitRef.current={theta:0.18,phi:1.15,r:11.5};updateCam();}],
-            ["⬡ Shot",()=>{rendRef.current.render(sceneRef.current,camRef.current);const a=document.createElement("a");a.href=rendRef.current.domElement.toDataURL("image/png");a.download="pose.png";a.click();}],
-          ].map(([lbl,fn])=>(
-            <button key={lbl} onClick={fn} style={{background:"none",border:"1px solid #22203A",color:"#5A5A88",padding:"5px 13px",borderRadius:18,cursor:"pointer",fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:.4,transition:"all .15s"}}
-              onMouseEnter={e=>{e.target.style.borderColor="#E8884A";e.target.style.color="#E4E4F0";}}
-              onMouseLeave={e=>{e.target.style.borderColor="#22203A";e.target.style.color="#5A5A88";}}
-            >{lbl}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── SIDEBAR ────────────────────────────────────────────────────── */}
-      <div style={{width:292,minWidth:292,background:"#0F0E1F",borderLeft:"1px solid #20203A",display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden"}}>
-        {/* Header */}
-        <div style={{padding:"17px 16px 12px",borderBottom:"1px solid #20203A",flexShrink:0}}>
-          <div style={{fontFamily:"'Syne',sans-serif",fontSize:22,fontWeight:800,letterSpacing:-0.5,color:"#E4E4F0"}}>
-            Pose<span style={{color:"#E8884A"}}>Master</span>
-          </div>
-          <div style={{fontSize:9,color:"#4A4A72",marginTop:2,letterSpacing:1.6,textTransform:"uppercase"}}>
-            Artist's 3D Mannequin
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{display:"flex",borderBottom:"1px solid #20203A",flexShrink:0}}>
-          {["basic","combat","power"].map(tab=>(
-            <button key={tab} onClick={()=>setActiveTab(tab)} style={{flex:1,background:"none",border:"none",borderBottom:activeTab===tab?`2px solid ${CAT_CLR[tab]}`:"2px solid transparent",color:activeTab===tab?CAT_CLR[tab]:"#4A4A72",padding:"9px 4px",fontSize:10,cursor:"pointer",fontFamily:"'DM Mono',monospace",letterSpacing:.8,textTransform:"uppercase",transition:"all .15s"}}>
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {/* Pose buttons */}
-        <div style={{padding:"10px 10px 8px",borderBottom:"1px solid #20203A",flexShrink:0,maxHeight:"36vh",overflowY:"auto",scrollbarWidth:"thin",scrollbarColor:"#20203A transparent"}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:5}}>
-            {tabPoses.map(([name,info])=>(
-              <button key={name} onClick={()=>quickPose(name)} style={{background:"#131220",border:"1px solid #20203A",color:"#5A5A88",padding:"8px 2px",borderRadius:8,cursor:"pointer",fontFamily:"'DM Mono',monospace",fontSize:10,textAlign:"center",transition:"all .14s",lineHeight:1.3}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=CAT_CLR[activeTab];e.currentTarget.style.color=CAT_CLR[activeTab];e.currentTarget.style.background=`${CAT_CLR[activeTab]}18`;}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor="#20203A";e.currentTarget.style.color="#5A5A88";e.currentTarget.style.background="#131220";}}
-              >{info.label}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat */}
-        <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-          <div style={{padding:"8px 14px 7px",fontSize:9,color:"#4A4A72",letterSpacing:1.4,textTransform:"uppercase",borderBottom:"1px solid #20203A",flexShrink:0,display:"flex",alignItems:"center",gap:7}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:"#E8884A",boxShadow:"0 0 6px #E8884A",animation:"pm-pulse 2s infinite"}}/>
-            Pose Bot
-          </div>
-          <div style={{flex:1,overflowY:"auto",padding:10,display:"flex",flexDirection:"column",gap:8,scrollbarWidth:"thin",scrollbarColor:"#20203A transparent"}}
-            ref={el=>{if(el)el.scrollTop=el.scrollHeight;}}
-          >
-            {msgs.map((msg,i)=>(
-              <div key={i} style={{alignSelf:msg.who==="u"?"flex-end":"flex-start",maxWidth:"92%",padding:"9px 11px",borderRadius:11,fontSize:11,lineHeight:1.55,background:msg.who==="u"?"#17162A":"#0F0E1E",border:"1px solid #1E1D32",color:msg.who==="u"?"#E4E4F0":"#8080A8"}}>
-                {msg.who==="b"&&<div style={{fontSize:9,color:"#E8884A",fontWeight:600,marginBottom:3,letterSpacing:.5}}>POSE BOT</div>}
-                <span dangerouslySetInnerHTML={{__html:msg.html}}/>
-              </div>
-            ))}
-          </div>
-          <div style={{padding:"9px 10px",borderTop:"1px solid #20203A",display:"flex",gap:7,flexShrink:0}}>
-            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send();}} placeholder="describe a pose…" maxLength={200}
-              style={{flex:1,background:"#131220",border:"1px solid #20203A",color:"#E4E4F0",padding:"8px 12px",borderRadius:18,fontFamily:"'DM Mono',monospace",fontSize:11,outline:"none"}}
-            />
-            <button onClick={send} style={{background:"#E8884A",border:"none",color:"#fff",padding:"8px 14px",borderRadius:18,cursor:"pointer",fontFamily:"'DM Mono',monospace",fontSize:14}}>→</button>
-          </div>
-        </div>
-      </div>
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",
+      background:"#0C0C1A",fontFamily:"'DM Mono',monospace",overflow:"hidden"}}>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@300;400;500&display=swap');
@@ -886,9 +789,200 @@ export default function PoseMaster() {
         em{color:#E4E4F0;font-style:normal;}
         b{color:#E8884A;font-weight:500;}
         small{font-size:9px;}
+        *{box-sizing:border-box;}
         *::-webkit-scrollbar{width:3px;}
         *::-webkit-scrollbar-thumb{background:#20203A;border-radius:2px;}
+        .pb:active{transform:scale(.95);background:#1A1830!important;}
+        .tb-btn:active{background:#1A1830;}
+
+        /* ── DESKTOP ── */
+        @media(min-width:700px){
+          #pm-layout{flex-direction:row!important;}
+          #pm-header{display:none!important;}
+          #pm-canvas{flex:1!important;height:100vh!important;}
+          #pm-sidebar{
+            width:280px!important;min-width:280px!important;
+            height:100vh!important;border-top:none!important;
+            border-left:1px solid #20203A!important;
+            flex-direction:column!important;
+          }
+          #pm-mobnav{display:none!important;}
+          #pm-poses{display:flex!important;flex:1!important;}
+          #pm-chat{display:flex!important;flex:1!important;}
+          #pm-deskhead{display:block!important;}
+        }
+
+        /* ── MOBILE ── */
+        @media(max-width:699px){
+          #pm-canvas{height:52vh!important;}
+          #pm-sidebar{height:48vh!important;}
+          #pm-deskhead{display:none!important;}
+        }
       `}</style>
+
+      {/* ── MOBILE HEADER ── */}
+      <div id="pm-header" style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+        padding:"8px 14px",background:"#0F0E1F",borderBottom:"1px solid #20203A",flexShrink:0}}>
+        <div>
+          <div style={{fontFamily:"'Syne',sans-serif",fontSize:18,fontWeight:800,letterSpacing:-.5,color:"#E4E4F0",lineHeight:1}}>
+            Pose<span style={{color:"#E8884A"}}>Master</span>
+          </div>
+          <div style={{fontSize:8,color:"#4A4A72",letterSpacing:1.2,textTransform:"uppercase"}}>Artist 3D Mannequin</div>
+        </div>
+        {selName && (
+          <div style={{background:"rgba(232,136,74,.12)",border:"1px solid #E8884A",
+            borderRadius:8,padding:"4px 9px",fontSize:9,color:"#E8884A",textAlign:"right"}}>
+            {selName.replace("left","L ").replace("right","R ").replace(/([A-Z])/g," $1").trim().toUpperCase()}
+            <div style={{display:"flex",gap:6,marginTop:1,justifyContent:"flex-end"}}>
+              {["x","y","z"].map(ax=>(
+                <span key={ax} style={{color:"#5A5A88",fontSize:8}}>{ax.toUpperCase()}:{d2(selRot[ax])}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── MAIN LAYOUT ── */}
+      <div id="pm-layout" style={{display:"flex",flex:1,overflow:"hidden",flexDirection:"column",minHeight:0}}>
+
+        {/* ── 3D CANVAS ── */}
+        <div id="pm-canvas" style={{position:"relative",overflow:"hidden",flexShrink:0}}
+          ref={mountRef}
+          onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp}
+          onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}
+          onContextMenu={e=>e.preventDefault()}
+        >
+          {/* Desktop joint HUD */}
+          {selName && (
+            <div style={{position:"absolute",top:12,left:12,background:"rgba(12,12,26,0.92)",
+              border:"1px solid #22203A",borderRadius:9,padding:"8px 12px",fontSize:11,
+              backdropFilter:"blur(14px)",pointerEvents:"none"}}>
+              <div style={{color:"#E8884A",fontSize:11,fontWeight:600,marginBottom:3}}>
+                {selName.replace("left","L ").replace("right","R ").replace(/([A-Z])/g," $1").trim().toUpperCase()}
+              </div>
+              <div style={{display:"flex",gap:12}}>
+                {["x","y","z"].map(ax=>(
+                  <span key={ax} style={{color:"#5A5A88",fontSize:10}}>
+                    {ax.toUpperCase()}: <span style={{color:"#E4E4F0"}}>{d2(selRot[ax])}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Toolbar */}
+          <div style={{position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",
+            display:"flex",gap:5,background:"rgba(12,12,26,.94)",
+            border:"1px solid #22203A",borderRadius:28,padding:"6px 12px"}}>
+            {[
+              ["↺ Reset",()=>{applyPose("neutral");setMsgs(m=>[...m,{who:"b",html:"Reset."}]);}],
+              ["⊕ Cam",()=>{orbitRef.current={theta:0.18,phi:1.15,r:11.5};updateCam();}],
+              ["⬡ Shot",()=>{rendRef.current.render(sceneRef.current,camRef.current);const a=document.createElement("a");a.href=rendRef.current.domElement.toDataURL("image/png");a.download="pose.png";a.click();}],
+            ].map(([lbl,fn])=>(
+              <button key={lbl} className="tb-btn" onClick={fn} style={{
+                background:"none",border:"1px solid #22203A",color:"#5A5A88",
+                padding:"6px 12px",borderRadius:16,cursor:"pointer",
+                fontFamily:"'DM Mono',monospace",fontSize:10,transition:"all .14s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="#E8884A";e.currentTarget.style.color="#E4E4F0";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="#22203A";e.currentTarget.style.color="#5A5A88";}}
+              >{lbl}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── SIDEBAR / BOTTOM PANEL ── */}
+        <div id="pm-sidebar" style={{background:"#0F0E1F",borderTop:"1px solid #20203A",
+          display:"flex",flexDirection:"column",overflow:"hidden",flexShrink:0}}>
+
+          {/* Desktop header (hidden on mobile) */}
+          <div id="pm-deskhead" style={{padding:"14px 14px 10px",borderBottom:"1px solid #20203A",flexShrink:0}}>
+            <div style={{fontFamily:"'Syne',sans-serif",fontSize:20,fontWeight:800,letterSpacing:-.5,color:"#E4E4F0"}}>
+              Pose<span style={{color:"#E8884A"}}>Master</span>
+            </div>
+            <div style={{fontSize:8,color:"#4A4A72",letterSpacing:1.4,textTransform:"uppercase",marginTop:1}}>
+              Artist's 3D Mannequin
+            </div>
+          </div>
+
+          {/* Mobile nav: Poses | Bot */}
+          <div id="pm-mobnav" style={{display:"flex",borderBottom:"1px solid #20203A",flexShrink:0}}>
+            {[["poses","Poses"],["chat","Bot"]].map(([id,lbl])=>(
+              <button key={id} onClick={()=>setMobileTab(id)} style={{
+                flex:1,background:"none",border:"none",
+                borderBottom:mobileTab===id?"2px solid #E8884A":"2px solid transparent",
+                color:mobileTab===id?"#E8884A":"#4A4A72",
+                padding:"9px 4px",fontSize:12,cursor:"pointer",
+                fontFamily:"'DM Mono',monospace",letterSpacing:.5,
+                textTransform:"uppercase",transition:"all .14s"}}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+
+          {/* POSES */}
+          <div id="pm-poses" style={{display:mobileTab==="poses"?"flex":"none",flexDirection:"column",overflow:"hidden",flex:1}}>
+            {/* Category tabs */}
+            <div style={{display:"flex",borderBottom:"1px solid #20203A",flexShrink:0}}>
+              {["basic","combat","power"].map(tab=>(
+                <button key={tab} onClick={()=>setActiveTab(tab)} style={{
+                  flex:1,background:"none",border:"none",
+                  borderBottom:activeTab===tab?`2px solid ${CAT_CLR[tab]}`:"2px solid transparent",
+                  color:activeTab===tab?CAT_CLR[tab]:"#4A4A72",
+                  padding:"8px 4px",fontSize:10,cursor:"pointer",
+                  fontFamily:"'DM Mono',monospace",letterSpacing:.7,
+                  textTransform:"uppercase",transition:"all .14s"}}>
+                  {tab}
+                </button>
+              ))}
+            </div>
+            {/* Grid */}
+            <div style={{flex:1,overflowY:"auto",padding:"8px 8px",scrollbarWidth:"thin"}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+                {tabPoses.map(([name,info])=>(
+                  <button key={name} className="pb" onClick={()=>quickPose(name)} style={{
+                    background:"#131220",border:"1px solid #20203A",
+                    color:"#5A5A88",padding:"10px 4px",borderRadius:9,
+                    cursor:"pointer",fontFamily:"'DM Mono',monospace",
+                    fontSize:11,textAlign:"center",transition:"all .13s",
+                    lineHeight:1.3,minHeight:42}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor=CAT_CLR[activeTab];e.currentTarget.style.color=CAT_CLR[activeTab];e.currentTarget.style.background=`${CAT_CLR[activeTab]}18`;}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="#20203A";e.currentTarget.style.color="#5A5A88";e.currentTarget.style.background="#131220";}}
+                  >{info.label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* CHAT */}
+          <div id="pm-chat" style={{display:mobileTab==="chat"?"flex":"none",flexDirection:"column",flex:1,overflow:"hidden"}}>
+            <div style={{flex:1,overflowY:"auto",padding:"9px",display:"flex",
+              flexDirection:"column",gap:7,scrollbarWidth:"thin"}}
+              ref={el=>{if(el)el.scrollTop=el.scrollHeight;}}>
+              {msgs.map((msg,i)=>(
+                <div key={i} style={{alignSelf:msg.who==="u"?"flex-end":"flex-start",
+                  maxWidth:"92%",padding:"9px 12px",borderRadius:11,fontSize:12,
+                  lineHeight:1.5,background:msg.who==="u"?"#17162A":"#0F0E1E",
+                  border:"1px solid #1E1D32",color:msg.who==="u"?"#E4E4F0":"#8080A8"}}>
+                  {msg.who==="b"&&<div style={{fontSize:9,color:"#E8884A",fontWeight:600,marginBottom:3}}>POSE BOT</div>}
+                  <span dangerouslySetInnerHTML={{__html:msg.html}}/>
+                </div>
+              ))}
+            </div>
+            <div style={{padding:"8px 9px",borderTop:"1px solid #20203A",display:"flex",gap:7,flexShrink:0}}>
+              <input value={input} onChange={e=>setInput(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter")send();}}
+                placeholder="describe a pose…" maxLength={200}
+                style={{flex:1,background:"#131220",border:"1px solid #20203A",
+                  color:"#E4E4F0",padding:"10px 13px",borderRadius:20,
+                  fontFamily:"'DM Mono',monospace",fontSize:12,outline:"none"}}
+              />
+              <button onClick={send} style={{background:"#E8884A",border:"none",color:"#fff",
+                padding:"10px 16px",borderRadius:20,cursor:"pointer",fontSize:15}}>→</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }
